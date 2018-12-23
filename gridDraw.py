@@ -2,8 +2,12 @@ import Tkinter as tk
 import random
 import robot
 
-'''NOTE: Currently the robot detects that there is a hole where it is moving, but it chooses to walk right through it...
-    It may be a problem with the decision structure in the robot class'''
+#Create branch to investigate the necessary components of the GUI
+#Would probably be easier if there was a list of distro locations...
+#Known bug where if a hole is located to the left of the distro, then the robot will get stuck
+#Might also affect if the hole is above the distro
+
+SIM_DELAY = 500; #The delay, in milliseconds, between simulation cycles
 
 class App(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -43,14 +47,17 @@ class App(tk.Tk):
                 self.oval[row,column] = self.canvas.create_oval(x1+2,y1+2,x2-2,y2-2, fill="blue", tags="oval")
                 #self.innerOval[row,column] = self.canvas.create_oval(x1+10,y1+10,x2-10,y2-10, fill="red", tags="oval")
 
+#Draw the distribution center (colored red)
         x,y = self.distroLocation
         x1 = x*self.cellwidth
         y1 = y * self.cellheight
         x2 = x1 + self.cellwidth
         y2 = y1 + self.cellheight
+
         self.distros[row,column] = self.canvas.create_rectangle(x1,y1,x2,y2, fill="red", tags="distro")
         self.distros[row,column] = self.canvas.create_oval(x1+2,y1+2,x2-2,y2-2, fill="red", tags="distro")
 
+#Draw the drop-off locations (a.k.a. holes) as blue
         for number1 in range(self.numHoles):
             column = random.randint(0,self.numColumns - 1)
             row = random.randint(0,self.numRows - 1)
@@ -67,7 +74,8 @@ class App(tk.Tk):
             self.holes[row,column] = self.canvas.create_oval(x1+2,y1+2,x2-2,y2-2, fill="blue", tags="hole")
             self.holesMap[row][column] = number1
 
-        self.robot = robot.Robot(self.getRandomHoleLoc(),self.numRows,self.numColumns,self.holesMap,self.distrosMap)
+#Draw the robots (blue circles with status icons)
+        self.robot = robot.Robot(self.distroLocation,self.numRows,self.numColumns,self.holesMap,self.distrosMap)
         self.robotList = [self.robot]
 
         for robotic in self.robotList:
@@ -80,23 +88,10 @@ class App(tk.Tk):
             self.innerOval[row,column] = self.canvas.create_oval(x1+10,y1+10,x2-10,y2-10, fill="red", tags="oval")
 
         self.count = 0;
-        self.redraw(500)
-
-    '''def isOccupied(self,x,y):
-        if (self.holesMap[x][y] == -1):
-            print("There is a hole there!")
-        if (self.distrosMap[x][y] != False):
-            print("There is a distro there!")'''
+        self.redraw(SIM_DELAY)
 
 
     def colorRobot(self,x,y,hasPackage):
-        '''item_id = self.oval[x,y]
-        self.canvas.itemconfig(item_id, fill="green")
-        item_id = self.innerOval[x,y]
-        if (hasPackage):
-            self.canvas.itemconfig(item_id, fill="yellow")
-        else:
-            self.canvas.itemconfig(item_id, fill="red")'''
 
         row, column = x,y
         x1 = column*self.cellwidth
@@ -120,9 +115,34 @@ class App(tk.Tk):
 
     def colorDistro(self,x,y):
         self.canvas.itemconfig("distro", fill="red")
+        x,y = self.distroLocation
+        x1 = x*self.cellwidth
+        y1 = y * self.cellheight
+        x2 = x1 + self.cellwidth
+        y2 = y1 + self.cellheight
+
+        self.distros[x,y] = self.canvas.create_rectangle(x1,y1,x2,y2, fill="red", tags="distro")
+        self.distros[x,y] = self.canvas.create_oval(x1+2,y1+2,x2-2,y2-2, fill="red", tags="distro")
 
     def colorHoles(self):
         self.canvas.itemconfig("hole", fill = "blue")
+	holesList = []
+	for r in range(self.numRows):
+		for c in range(self.numColumns):
+			if self.holesMap[r][c] != -1:
+				holesList.append((r,c))
+
+        for (row,column) in holesList:
+                
+            x1 = column*self.cellwidth
+            y1 = row * self.cellheight
+            x2 = x1 + self.cellwidth
+            y2 = y1 + self.cellheight
+            self.holes[row,column] = self.canvas.create_rectangle(x1,y1,x2,y2, fill="blue", tags="hole")
+            self.holes[row,column] = self.canvas.create_oval(x1+2,y1+2,x2-2,y2-2, fill="blue", tags="hole")
+            #self.holesMap[row][column] = number1
+
+
 
     def checkRobots(self):
         for robot in self.robotList:
@@ -152,13 +172,23 @@ class App(tk.Tk):
         self.canvas.itemconfig("rect", fill="white")
         self.canvas.itemconfig("oval", fill="black")
 
-        self.checkRobots()
-        self.colorAllRobots()
+        for column in range(self.numColumns):
+            for row in range(self.numRows):
+                x1 = column*self.cellwidth
+                y1 = row * self.cellheight
+                x2 = x1 + self.cellwidth
+                y2 = y1 + self.cellheight
+                self.rect[row,column] = self.canvas.create_rectangle(x1,y1,x2,y2, fill="white", tags="rect")
+                self.oval[row,column] = self.canvas.create_oval(x1+2,y1+2,x2-2,y2-2, fill="black", tags="oval")
 
         distroX, distroY = self.distroLocation
         self.colorDistro(distroX,distroY)
 
         self.colorHoles()
+
+        self.checkRobots()
+        self.colorAllRobots()
+
 
         self.after(delay, lambda: self.redraw(delay))
         
