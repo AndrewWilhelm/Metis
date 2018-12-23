@@ -14,10 +14,8 @@ class Robot():
 
     def isOccupied(self,x,y):
         if (self.holesMap[x][y] != -1):
-            print("There is a hole there!")
             return True
         if (self.distrosMap[x][y] != False):
-            print("There is a distro there!")
             return True
         return False
 
@@ -27,7 +25,6 @@ class Robot():
     def nextPosition(self):
         nextX, nextY = self.currentLocation
         targetX, targetY = self.targetLocation
-        print(self.targetLocation)
         currentX, currentY = self.currentLocation
         if (currentX > targetX):
             if (not self.isOccupied(currentX-1,currentY) or (self.targetLocation == (currentX-1,currentY))):

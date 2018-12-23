@@ -13,6 +13,7 @@ class App(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         self.canvas = tk.Canvas(self, width=500, height=500, borderwidth=0, highlightthickness=0)
+	self.title('Metis')
         self.canvas.pack(side="top", fill="both", expand="true")
         self.rows = 100
         self.columns = 100
@@ -45,7 +46,6 @@ class App(tk.Tk):
                 y2 = y1 + self.cellheight
                 self.rect[row,column] = self.canvas.create_rectangle(x1,y1,x2,y2, fill="blue", tags="rect")
                 self.oval[row,column] = self.canvas.create_oval(x1+2,y1+2,x2-2,y2-2, fill="blue", tags="oval")
-                #self.innerOval[row,column] = self.canvas.create_oval(x1+10,y1+10,x2-10,y2-10, fill="red", tags="oval")
 
 #Draw the distribution center (colored red)
         x,y = self.distroLocation
@@ -114,7 +114,6 @@ class App(tk.Tk):
 
 
     def colorDistro(self,x,y):
-        self.canvas.itemconfig("distro", fill="red")
         x,y = self.distroLocation
         x1 = x*self.cellwidth
         y1 = y * self.cellheight
@@ -125,7 +124,6 @@ class App(tk.Tk):
         self.distros[x,y] = self.canvas.create_oval(x1+2,y1+2,x2-2,y2-2, fill="red", tags="distro")
 
     def colorHoles(self):
-        self.canvas.itemconfig("hole", fill = "blue")
 	holesList = []
 	for r in range(self.numRows):
 		for c in range(self.numColumns):
@@ -158,7 +156,6 @@ class App(tk.Tk):
     #returns a random hole location has a tuple (returns -1,-1 if something fails)
     def getRandomHoleLoc(self):
         holeNum = random.randint(0,self.numHoles - 1)
-        print "Hole num is ",holeNum
         holeX, holeY = -1,-1
         for i in range(len(self.holesMap)):
             for j in range(len(self.holesMap[0])):
@@ -169,8 +166,6 @@ class App(tk.Tk):
             
 
     def redraw(self, delay):
-        self.canvas.itemconfig("rect", fill="white")
-        self.canvas.itemconfig("oval", fill="black")
 
         for column in range(self.numColumns):
             for row in range(self.numRows):
